@@ -38,6 +38,15 @@ public class UserEntity {
     protected UserEntity() {
     }
 
+    public UserEntity(Long id, String nom, String email, String motDePasseHash, boolean actif, RoleEntity role) {
+        this.id = id;
+        this.nom = nom;
+        this.email = email;
+        this.motDePasseHash = motDePasseHash;
+        this.actif = actif;
+        this.role = role;
+    }
+
     public Long getId() {
         return id;
     }
