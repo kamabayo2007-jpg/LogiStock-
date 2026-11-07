@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -32,6 +33,21 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/health").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMINISTRATEUR")
+                        .requestMatchers("/api/users/**").hasRole("ADMINISTRATEUR")
+
+                        // Catalogue : lecture pour tous les rôles (le commercial doit voir les produits),
+                        // écriture réservée au gestionnaire de stock.
+                        .requestMatchers(HttpMethod.GET, "/api/produits/**", "/api/categories/**")
+                        .hasAnyRole("ADMINISTRATEUR", "GESTIONNAIRE_STOCK", "COMMERCIAL")
+                        .requestMatchers("/api/produits/**", "/api/categories/**")
+                        .hasRole("GESTIONNAIRE_STOCK")
+
+                        // Mouvements : l'administrateur peut consulter, seul le gestionnaire enregistre.
+                        .requestMatchers(HttpMethod.GET, "/api/mouvements/**")
+                        .hasAnyRole("ADMINISTRATEUR", "GESTIONNAIRE_STOCK")
+                        .requestMatchers("/api/mouvements/**")
+                        .hasRole("GESTIONNAIRE_STOCK")
+
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
