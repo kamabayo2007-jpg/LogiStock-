@@ -48,6 +48,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/mouvements/**")
                         .hasRole("GESTIONNAIRE_STOCK")
 
+                        // Ventes : le commercial crée, valide et annule ; l'administrateur consulte.
+                        // (Le gestionnaire de stock n'a pas accès aux clients ni aux commandes.)
+                        .requestMatchers(HttpMethod.GET, "/api/clients/**", "/api/commandes/**")
+                        .hasAnyRole("ADMINISTRATEUR", "COMMERCIAL")
+                        .requestMatchers("/api/clients/**", "/api/commandes/**")
+                        .hasRole("COMMERCIAL")
+
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
