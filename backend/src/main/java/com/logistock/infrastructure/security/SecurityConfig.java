@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/health").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMINISTRATEUR")
+                        .requestMatchers("/api/users/**").hasRole("ADMINISTRATEUR")
 
                         // Catalogue : lecture pour tous les rôles (le commercial doit voir les produits),
                         // écriture réservée au gestionnaire de stock.
