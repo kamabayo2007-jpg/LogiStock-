@@ -28,7 +28,12 @@ services:
     ports:
       - "8080:8080"
 
-  # frontend (Angular + nginx) : à ajouter quand le dossier frontend/ sera prêt
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
 
 volumes:
   db_data:
