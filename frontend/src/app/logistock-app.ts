@@ -1,22 +1,27 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, untracked } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AlertesService } from './alertes.service';
 import { AuthService } from './auth.service';
+import { Cloche } from './cloche';
 import { Icone } from './icone';
 import { libelleRole } from './models';
 import { MessageService } from './message.service';
 
-/** Coquille de l'application : menu selon le rôle, message d'état, zone de page. */
+/** Coquille de l'application : menu selon le rôle, alertes, message d'état, zone de page. */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icone, Cloche],
   template: `
     @if (msg.courant(); as m) {
-      <div class="toast" [class.erreur]="m.type === 'erreur'" (click)="msg.fermer()">{{ m.texte }}</div>
+      <div class="toast" [class.erreur]="m.type === 'erreur'" [class.alerte]="m.type === 'alerte'" (click)="msg.fermer()">{{ m.texte }}</div>
     }
     @if (auth.utilisateur(); as u) {
       <div class="layout">
         <aside class="side">
-          <div class="marque"><span class="logo">L</span> LogiStock <span class="sa">SA</span></div>
+          <div class="haut">
+            <div class="marque"><span class="logo">L</span> LogiStock <span class="sa">SA</span></div>
+            <app-cloche />
+          </div>
           <nav>
             @for (e of auth.menu(); track e.chemin) {
               <a [routerLink]="e.chemin" routerLinkActive="actif"><app-icone [nom]="e.icone" /> {{ e.libelle }}</a>
@@ -28,7 +33,10 @@ import { MessageService } from './message.service';
               <strong>{{ u.nom }}</strong>
               <small>{{ role(u.role) }}</small>
             </div>
-            <button class="icone-btn" title="Déconnexion" (click)="auth.logout()"><app-icone nom="sortie" /></button>
+            <div class="outils">
+              <a routerLink="/a-propos" class="icone-btn" title="À propos" aria-label="À propos"><app-icone nom="info" /></a>
+              <button class="icone-btn" title="Déconnexion" aria-label="Déconnexion" (click)="auth.logout()"><app-icone nom="sortie" /></button>
+            </div>
           </div>
         </aside>
         <main><router-outlet /></main>
@@ -41,7 +49,16 @@ import { MessageService } from './message.service';
 export class LogiStockApp {
   auth = inject(AuthService);
   msg = inject(MessageService);
+  private alertes = inject(AlertesService);
   role = libelleRole;
+
+  constructor() {
+    // Les alertes de stock sont suivies tant qu'une personne est connectée.
+    effect(() => {
+      const connecte = this.auth.utilisateur() !== null;
+      untracked(() => (connecte ? this.alertes.demarrer() : this.alertes.arreter()));
+    });
+  }
 
   initiales(nom: string): string {
     return nom

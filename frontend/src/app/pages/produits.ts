@@ -1,11 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../api.service';
+import { AlertesService } from '../alertes.service';
 import { AuthService } from '../auth.service';
 import { FcfaPipe } from '../fcfa.pipe';
 import { MessageService } from '../message.service';
 import { Categorie, Produit } from '../models';
-import { Pagination } from '../pagination';
+import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
 
 interface FormProduit {
@@ -21,7 +23,7 @@ interface FormProduit {
 
 @Component({
   selector: 'app-produits',
-  imports: [FormsModule, FcfaPipe, Pagination],
+  imports: [FormsModule, FcfaPipe, Pagination, TriMobile],
   template: `
     <div class="entete">
       <div><h2>Produits</h2><p class="sous-titre">Catalogue et niveaux de stock</p></div>
@@ -67,6 +69,8 @@ interface FormProduit {
       </div>
     }
 
+    <app-tri-mobile [t]="t" [colonnes]="[{ cle: 'designation', label: 'Désignation' }, { cle: 'reference', label: 'Référence' }, { cle: 'categorieNom', label: 'Catégorie' }, { cle: 'prix', label: 'Prix' }, { cle: 'quantite', label: 'Stock' }, { cle: 'etat', label: 'État' }]" />
+
     <div class="tableau">
       <table>
         <thead>
@@ -84,19 +88,19 @@ interface FormProduit {
         <tbody>
           @for (p of t.lignes(); track p.id) {
             <tr>
-              <td>{{ p.reference }}</td>
-              <td>{{ p.designation }}</td>
-              <td>{{ p.categorieNom }}</td>
-              <td class="num">{{ p.prix | fcfa }}</td>
-              <td class="num"><strong>{{ p.quantite }}</strong></td>
-              <td class="num">{{ p.seuilAlerte }}</td>
-              <td>
+              <td data-label="Référence">{{ p.reference }}</td>
+              <td data-label="Désignation">{{ p.designation }}</td>
+              <td data-label="Catégorie">{{ p.categorieNom }}</td>
+              <td data-label="Prix" class="num">{{ p.prix | fcfa }}</td>
+              <td data-label="Stock" class="num"><strong>{{ p.quantite }}</strong></td>
+              <td data-label="Seuil" class="num">{{ p.seuilAlerte }}</td>
+              <td data-label="État">
                 @if (p.quantite === 0) { <span class="badge rouge">Rupture</span> }
                 @else if (p.quantite <= p.seuilAlerte) { <span class="badge orange">Alerte</span> }
                 @else { <span class="badge vert">OK</span> }
               </td>
               @if (peutModifier) {
-                <td class="actions">
+                <td data-label="" class="actions">
                   <button class="petit secondaire" (click)="modifier(p)">Modifier</button>
                   <button class="petit danger" (click)="supprimer(p)">Supprimer</button>
                 </td>
@@ -128,6 +132,9 @@ export class ProduitsPage implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private msg = inject(MessageService);
+  private alertes = inject(AlertesService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   produits = signal<Produit[]>([]);
   t = new DonneesTable<Produit>(() => this.produits(), 'designation', 1, {
@@ -144,13 +151,17 @@ export class ProduitsPage implements OnInit {
   }
 
   ngOnInit() {
-    this.charger();
+    // ?vue=alertes (lien de la cloche) ouvre directement la liste des produits en alerte.
+    this.route.queryParamMap.subscribe((q) => {
+      const v = q.get('vue');
+      this.vue = v === 'alertes' || v === 'ruptures' ? v : 'tous';
+      this.charger();
+    });
     this.chargerCategories();
   }
 
   changerVue(v: 'tous' | 'alertes' | 'ruptures') {
-    this.vue = v;
-    this.charger();
+    this.router.navigate([], { queryParams: { vue: v === 'tous' ? null : v } });
   }
 
   charger() {
@@ -190,6 +201,7 @@ export class ProduitsPage implements OnInit {
         this.msg.ok(f.id ? 'Produit modifié' : 'Produit créé');
         this.edition.set(null);
         this.charger();
+        this.alertes.rafraichir();
       },
       error: (e) => this.msg.erreur(e),
     });
@@ -201,6 +213,7 @@ export class ProduitsPage implements OnInit {
       next: () => {
         this.msg.ok('Produit supprimé');
         this.charger();
+        this.alertes.rafraichir();
       },
       error: (e) => this.msg.erreur(e),
     });

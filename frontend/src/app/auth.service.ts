@@ -14,6 +14,7 @@ export interface EntreeMenu {
   chemin: string;
   libelle: string;
   icone: string;
+  court: string;
 }
 
 const CLE_TOKEN = 'logistock.token';
@@ -30,18 +31,18 @@ export class AuthService {
   readonly menu = computed<EntreeMenu[]>(() => {
     const role = this.utilisateur()?.role;
     const menu: EntreeMenu[] = [
-      { chemin: '/tableau-de-bord', libelle: 'Tableau de bord', icone: 'tableau' },
-      { chemin: '/produits', libelle: 'Produits', icone: 'produits' },
+      { chemin: '/tableau-de-bord', libelle: 'Tableau de bord', icone: 'tableau', court: 'Accueil' },
+      { chemin: '/produits', libelle: 'Produits', icone: 'produits', court: 'Produits' },
     ];
     if (role === 'ADMINISTRATEUR' || role === 'GESTIONNAIRE_STOCK') {
-      menu.push({ chemin: '/mouvements', libelle: 'Mouvements de stock', icone: 'mouvements' });
+      menu.push({ chemin: '/mouvements', libelle: 'Mouvements de stock', icone: 'mouvements', court: 'Stock' });
     }
     if (role === 'ADMINISTRATEUR' || role === 'COMMERCIAL') {
-      menu.push({ chemin: '/clients', libelle: 'Clients', icone: 'clients' });
-      menu.push({ chemin: '/commandes', libelle: 'Commandes', icone: 'commandes' });
+      menu.push({ chemin: '/clients', libelle: 'Clients', icone: 'clients', court: 'Clients' });
+      menu.push({ chemin: '/commandes', libelle: 'Commandes', icone: 'commandes', court: 'Commandes' });
     }
     if (role === 'ADMINISTRATEUR') {
-      menu.push({ chemin: '/comptes', libelle: 'Comptes', icone: 'comptes' });
+      menu.push({ chemin: '/comptes', libelle: 'Comptes', icone: 'comptes', court: 'Comptes' });
     }
     return menu;
   });
@@ -66,6 +67,7 @@ export class AuthService {
           try {
             localStorage.setItem(CLE_TOKEN, r.token);
             localStorage.setItem(CLE_USER, JSON.stringify(r.user));
+            sessionStorage.removeItem('logistock.annonce');
           } catch {
             /* stockage indisponible : la session durera jusqu'au rechargement */
           }

@@ -4,7 +4,7 @@ import { ApiService } from '../api.service';
 import { AuthService } from '../auth.service';
 import { MessageService } from '../message.service';
 import { ROLES, Role, Utilisateur, libelleRole } from '../models';
-import { Pagination } from '../pagination';
+import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
 
 interface FormCompte {
@@ -17,7 +17,7 @@ interface FormCompte {
 
 @Component({
   selector: 'app-comptes',
-  imports: [FormsModule, Pagination],
+  imports: [FormsModule, Pagination, TriMobile],
   template: `
     <div class="entete">
       <div><h2>Comptes utilisateurs</h2><p class="sous-titre">Accès à l'application et rôles</p></div>
@@ -48,6 +48,8 @@ interface FormCompte {
       </div>
     }
 
+    <app-tri-mobile [t]="t" [colonnes]="[{ cle: 'nom', label: 'Nom' }, { cle: 'email', label: 'E-mail' }, { cle: 'role', label: 'Rôle' }, { cle: 'actif', label: 'État' }]" />
+
     <div class="tableau">
       <table>
         <thead>
@@ -62,13 +64,13 @@ interface FormCompte {
         <tbody>
           @for (u of t.lignes(); track u.id) {
             <tr>
-              <td>{{ u.nom }}</td>
-              <td>{{ u.email }}</td>
-              <td>{{ role(u.role) }}</td>
-              <td>
+              <td data-label="Nom">{{ u.nom }}</td>
+              <td data-label="E-mail">{{ u.email }}</td>
+              <td data-label="Rôle">{{ role(u.role) }}</td>
+              <td data-label="État">
                 <span class="badge" [class.vert]="u.actif" [class.rouge]="!u.actif">{{ u.actif ? 'Actif' : 'Désactivé' }}</span>
               </td>
-              <td class="actions">
+              <td data-label="" class="actions">
                 <button class="petit secondaire" (click)="modifier(u)">Modifier</button>
                 <button class="petit" [class.danger]="u.actif" [class.secondaire]="!u.actif" (click)="basculer(u)">
                   {{ u.actif ? 'Désactiver' : 'Réactiver' }}

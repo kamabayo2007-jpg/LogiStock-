@@ -65,6 +65,17 @@ export class DonneesTable<T> {
     this.page.set(1);
   }
 
+  /** Choisit une colonne de tri sans inverser (liste déroulante sur téléphone). */
+  choisir(cle: string) {
+    this.cle.set(cle);
+    this.sens.set(1);
+    this.page.set(1);
+  }
+
+  inverser() {
+    this.sens.set(this.sens() === 1 ? -1 : 1);
+  }
+
   fleche(cle: string): string {
     return this.cle() === cle ? (this.sens() === 1 ? '▲' : '▼') : '↕';
   }
