@@ -2,11 +2,12 @@ import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../api.service';
+import { AlertesService } from '../alertes.service';
 import { AuthService } from '../auth.service';
 import { FcfaPipe } from '../fcfa.pipe';
 import { MessageService } from '../message.service';
 import { Client, Commande, Produit } from '../models';
-import { Pagination } from '../pagination';
+import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
 
 interface LigneForm {
@@ -21,7 +22,7 @@ interface FormCommande {
 
 @Component({
   selector: 'app-commandes',
-  imports: [FormsModule, FcfaPipe, DatePipe, Pagination],
+  imports: [FormsModule, FcfaPipe, DatePipe, Pagination, TriMobile],
   template: `
     <div class="entete">
       <div><h2>Commandes</h2><p class="sous-titre">Création, validation et facturation</p></div>
@@ -55,7 +56,7 @@ interface FormCommande {
           <tbody>
             @for (l of f.lignes; track $index) {
               <tr>
-                <td>
+                <td data-label="Produit">
                   <select [(ngModel)]="l.produitId">
                     <option [ngValue]="null">— choisir —</option>
                     @for (p of produits(); track p.id) {
@@ -63,10 +64,10 @@ interface FormCommande {
                     }
                   </select>
                 </td>
-                <td class="num"><input class="court" type="number" min="1" [(ngModel)]="l.quantite" /></td>
-                <td class="num">{{ prix(l.produitId) | fcfa }}</td>
-                <td class="num">{{ prix(l.produitId) * l.quantite | fcfa }}</td>
-                <td><button class="petit danger" (click)="retirerLigne(f, $index)">×</button></td>
+                <td class="num" data-label="Quantité"><input class="court" type="number" min="1" [(ngModel)]="l.quantite" /></td>
+                <td class="num" data-label="Prix">{{ prix(l.produitId) | fcfa }}</td>
+                <td class="num" data-label="Total">{{ prix(l.produitId) * l.quantite | fcfa }}</td>
+                <td data-label=""><button class="petit danger" (click)="retirerLigne(f, $index)">×</button></td>
               </tr>
             }
           </tbody>
@@ -83,6 +84,8 @@ interface FormCommande {
       </div>
     }
 
+    <app-tri-mobile [t]="t" [colonnes]="[{ cle: 'date', label: 'Date' }, { cle: 'id', label: 'N°' }, { cle: 'clientNom', label: 'Client' }, { cle: 'statut', label: 'Statut' }, { cle: 'total', label: 'Total' }]" />
+
     <div class="tableau">
       <table>
         <thead>
@@ -98,16 +101,16 @@ interface FormCommande {
         <tbody>
           @for (c of t.lignes(); track c.id) {
             <tr>
-              <td>#{{ c.id }}</td>
-              <td>{{ c.date | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ c.clientNom }}</td>
-              <td>
+              <td data-label="N°">#{{ c.id }}</td>
+              <td data-label="Date">{{ c.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td data-label="Client">{{ c.clientNom }}</td>
+              <td data-label="Statut">
                 <span class="badge" [class.orange]="c.statut === 'EN_COURS'" [class.vert]="c.statut === 'VALIDEE'" [class.rouge]="c.statut === 'ANNULEE'">
                   {{ libelle(c.statut) }}
                 </span>
               </td>
-              <td class="num">{{ c.total | fcfa }}</td>
-              <td class="actions">
+              <td data-label="Total" class="num">{{ c.total | fcfa }}</td>
+              <td data-label="" class="actions">
                 <button class="petit secondaire" (click)="basculer(c.id)">{{ ouverte() === c.id ? 'Masquer' : 'Détail' }}</button>
                 @if (c.statut === 'VALIDEE') {
                   <button class="petit secondaire" (click)="facture(c)">Facture PDF</button>
@@ -126,10 +129,10 @@ interface FormCommande {
                     <tbody>
                       @for (l of c.lignes; track l.produitId) {
                         <tr>
-                          <td>{{ l.reference }}</td><td>{{ l.designation }}</td>
-                          <td class="num">{{ l.quantite }}</td>
-                          <td class="num">{{ l.prixUnitaire | fcfa }}</td>
-                          <td class="num">{{ l.total | fcfa }}</td>
+                          <td data-label="Référence">{{ l.reference }}</td><td data-label="Désignation">{{ l.designation }}</td>
+                          <td data-label="Qté" class="num">{{ l.quantite }}</td>
+                          <td data-label="Prix unitaire" class="num">{{ l.prixUnitaire | fcfa }}</td>
+                          <td data-label="Total" class="num">{{ l.total | fcfa }}</td>
                         </tr>
                       }
                     </tbody>
@@ -150,6 +153,7 @@ export class CommandesPage implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private msg = inject(MessageService);
+  private alertes = inject(AlertesService);
 
   commandes = signal<Commande[]>([]);
   t = new DonneesTable<Commande>(() => this.commandes(), 'date', -1);
@@ -234,6 +238,7 @@ export class CommandesPage implements OnInit {
         this.msg.ok('Commande n°' + c.id + ' validée : stock mis à jour, facture émise');
         this.charger();
         this.chargerReferentiels();
+        this.alertes.rafraichir();
       },
       error: (e) => this.msg.erreur(e),
     });

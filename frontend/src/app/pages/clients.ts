@@ -6,7 +6,7 @@ import { AuthService } from '../auth.service';
 import { FcfaPipe } from '../fcfa.pipe';
 import { MessageService } from '../message.service';
 import { Client, Commande } from '../models';
-import { Pagination } from '../pagination';
+import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
 
 interface FormClient {
@@ -20,7 +20,7 @@ interface FormClient {
 
 @Component({
   selector: 'app-clients',
-  imports: [FormsModule, FcfaPipe, DatePipe, Pagination],
+  imports: [FormsModule, FcfaPipe, DatePipe, Pagination, TriMobile],
   template: `
     <div class="entete">
       <div><h2>Clients</h2><p class="sous-titre">Fichier client et historique d'achats</p></div>
@@ -50,6 +50,8 @@ interface FormClient {
       </div>
     }
 
+    <app-tri-mobile [t]="t" [colonnes]="[{ cle: 'nom', label: 'Nom' }, { cle: 'telephone', label: 'Téléphone' }, { cle: 'email', label: 'E-mail' }, { cle: 'adresse', label: 'Adresse' }]" />
+
     <div class="tableau">
       <table>
         <thead>
@@ -64,11 +66,11 @@ interface FormClient {
         <tbody>
           @for (c of t.lignes(); track c.id) {
             <tr>
-              <td>{{ c.prenom ? c.prenom + ' ' : '' }}{{ c.nom }}</td>
-              <td>{{ c.telephone }}</td>
-              <td>{{ c.email }}</td>
-              <td>{{ c.adresse }}</td>
-              <td class="actions">
+              <td data-label="Nom">{{ c.prenom ? c.prenom + ' ' : '' }}{{ c.nom }}</td>
+              <td data-label="Téléphone">{{ c.telephone }}</td>
+              <td data-label="E-mail">{{ c.email }}</td>
+              <td data-label="Adresse">{{ c.adresse }}</td>
+              <td data-label="" class="actions">
                 <button class="petit secondaire" (click)="voirHistorique(c)">Historique</button>
                 @if (peutModifier) {
                   <button class="petit secondaire" (click)="modifier(c)">Modifier</button>
@@ -92,10 +94,10 @@ interface FormClient {
           <tbody>
             @for (c of h.commandes; track c.id) {
               <tr>
-                <td>#{{ c.id }}</td>
-                <td>{{ c.date | date: 'dd/MM/yyyy HH:mm' }}</td>
-                <td>{{ c.statut }}</td>
-                <td class="num">{{ c.total | fcfa }}</td>
+                <td data-label="Commande">#{{ c.id }}</td>
+                <td data-label="Date">{{ c.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td data-label="Statut">{{ c.statut }}</td>
+                <td data-label="Total" class="num">{{ c.total | fcfa }}</td>
               </tr>
             } @empty {
               <tr><td colspan="4" class="vide">Ce client n'a pas encore de commande.</td></tr>

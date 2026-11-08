@@ -163,15 +163,15 @@ const MOIS = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août'
               <tbody>
                 @for (c of dernieres(); track c.id) {
                   <tr>
-                    <td>#{{ c.id }}</td>
-                    <td>{{ c.date | date: 'dd/MM/yyyy HH:mm' }}</td>
-                    <td>{{ c.clientNom }}</td>
-                    <td>
+                    <td data-label="N°">#{{ c.id }}</td>
+                    <td data-label="Date">{{ c.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td data-label="Client">{{ c.clientNom }}</td>
+                    <td data-label="Statut">
                       <span class="badge" [class.orange]="c.statut === 'EN_COURS'" [class.vert]="c.statut === 'VALIDEE'" [class.rouge]="c.statut === 'ANNULEE'">
                         {{ c.statut === 'EN_COURS' ? 'En cours' : c.statut === 'VALIDEE' ? 'Validée' : 'Annulée' }}
                       </span>
                     </td>
-                    <td class="num">{{ c.total | fcfa }}</td>
+                    <td data-label="Total" class="num">{{ c.total | fcfa }}</td>
                   </tr>
                 } @empty {
                   <tr><td colspan="5" class="vide">Aucune commande.</td></tr>

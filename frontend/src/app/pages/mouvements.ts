@@ -2,15 +2,16 @@ import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../api.service';
+import { AlertesService } from '../alertes.service';
 import { AuthService } from '../auth.service';
 import { MessageService } from '../message.service';
 import { Mouvement, Produit } from '../models';
-import { Pagination } from '../pagination';
+import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
 
 @Component({
   selector: 'app-mouvements',
-  imports: [FormsModule, DatePipe, Pagination],
+  imports: [FormsModule, DatePipe, Pagination, TriMobile],
   template: `
     <div class="entete"><div><h2>Mouvements de stock</h2><p class="sous-titre">Entrées, sorties et historique complet</p></div></div>
 
@@ -53,6 +54,8 @@ import { DonneesTable } from '../table';
       </select>
     </div>
 
+    <app-tri-mobile [t]="t" [colonnes]="[{ cle: 'date', label: 'Date' }, { cle: 'produit', label: 'Produit' }, { cle: 'type', label: 'Type' }, { cle: 'quantite', label: 'Quantité' }, { cle: 'commandeId', label: 'Commande' }]" />
+
     <div class="tableau">
       <table>
         <thead>
@@ -68,16 +71,16 @@ import { DonneesTable } from '../table';
         <tbody>
           @for (m of t.lignes(); track m.id) {
             <tr>
-              <td>{{ m.date | date: 'dd/MM/yyyy HH:mm' }}</td>
-              <td>{{ nomProduit(m.produitId) }}</td>
-              <td>
+              <td data-label="Date">{{ m.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td data-label="Produit">{{ nomProduit(m.produitId) }}</td>
+              <td data-label="Type">
                 <span class="badge" [class.vert]="m.type === 'ENTREE'" [class.orange]="m.type === 'SORTIE'">
                   {{ m.type === 'ENTREE' ? 'Entrée' : 'Sortie' }}
                 </span>
               </td>
-              <td class="num">{{ m.quantite }}</td>
-              <td>{{ m.motif }}</td>
-              <td>{{ m.commandeId ? '#' + m.commandeId : '' }}</td>
+              <td data-label="Quantité" class="num">{{ m.quantite }}</td>
+              <td data-label="Motif">{{ m.motif }}</td>
+              <td data-label="Commande">{{ m.commandeId ? '#' + m.commandeId : '' }}</td>
             </tr>
           } @empty {
             <tr><td colspan="6" class="vide">Aucun mouvement.</td></tr>
@@ -92,6 +95,7 @@ export class MouvementsPage implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private msg = inject(MessageService);
+  private alertes = inject(AlertesService);
 
   produits = signal<Produit[]>([]);
   mouvements = signal<Mouvement[]>([]);
@@ -139,6 +143,7 @@ export class MouvementsPage implements OnInit {
         this.form = { produitId: null, type: 'ENTREE', quantite: 1, motif: '' };
         this.chargerProduits();
         this.charger();
+        this.alertes.rafraichir();
       },
       error: (e) => this.msg.erreur(e),
     });

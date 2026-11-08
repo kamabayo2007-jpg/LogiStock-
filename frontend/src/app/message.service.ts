@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
 export interface Message {
-  type: 'ok' | 'erreur';
+  type: 'ok' | 'erreur' | 'alerte';
   texte: string;
 }
 
@@ -13,6 +13,10 @@ export class MessageService {
 
   ok(texte: string) {
     this.afficher({ type: 'ok', texte });
+  }
+
+  alerte(texte: string) {
+    this.afficher({ type: 'alerte', texte });
   }
 
   erreur(e: unknown, parDefaut = 'Une erreur est survenue') {
@@ -33,6 +37,6 @@ export class MessageService {
   private afficher(m: Message) {
     this.courant.set(m);
     clearTimeout(this.minuteur);
-    this.minuteur = setTimeout(() => this.courant.set(null), m.type === 'ok' ? 4000 : 8000);
+    this.minuteur = setTimeout(() => this.courant.set(null), m.type === 'erreur' ? 8000 : 5000);
   }
 }

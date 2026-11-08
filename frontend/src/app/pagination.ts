@@ -26,3 +26,25 @@ export class Pagination {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   t = input.required<DonneesTable<any>>();
 }
+
+/** Sur téléphone, les en-têtes de colonnes disparaissent : ce menu les remplace pour trier. */
+@Component({
+  selector: 'app-tri-mobile',
+  template: `
+    <div class="tri-mobile">
+      <label class="inline">Trier par
+        <select [value]="t().cle()" (change)="t().choisir($any($event.target).value)">
+          @for (c of colonnes(); track c.cle) {
+            <option [value]="c.cle">{{ c.label }}</option>
+          }
+        </select>
+      </label>
+      <button class="petit secondaire" (click)="t().inverser()">{{ t().sens() === 1 ? '▲ croissant' : '▼ décroissant' }}</button>
+    </div>
+  `,
+})
+export class TriMobile {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t = input.required<DonneesTable<any>>();
+  colonnes = input.required<{ cle: string; label: string }[]>();
+}
