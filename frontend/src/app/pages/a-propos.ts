@@ -3,7 +3,15 @@ import { AuthService } from '../auth.service';
 import { Role, libelleRole } from '../models';
 
 /** Noms des membres du groupe : à compléter (la section n'apparaît que si la liste n'est pas vide). */
-const EQUIPE: string[] = [];
+const EQUIPE: string[] = [
+  'Mama Dit Kama Traoré – Scrum Master',
+  'Ahamadou Diarra – Lead back, qualité et sécurité',
+  'Hamzata Salahadine – Lead back',
+  'Gaoussou Cissé – Lead back',
+  'Founè Koita – Lead front',
+  'Nouhoum Berthe – Lead front',
+  'Mouhamoud Diarra – Lead front',
+];
 
 const GUIDE: Record<Role, string[]> = {
   ADMINISTRATEUR: [

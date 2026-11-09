@@ -250,3 +250,9 @@ a.icone-btn { text-decoration: none; cursor: pointer; }
   .tri-mobile label { flex: 1; }
   .moi .outils { margin-left: 0; }
 }
+.alerte.ok { background: #dcfce7; color: #166534; }
+.bas-carte { margin: 14px 0 0; text-align: center; font-size: 14px; color: var(--gris); }
+.bas-carte a { color: var(--bleu); font-weight: 600; text-decoration: none; }
+.alerte.ok { background: #dcfce7; color: #166534; }
+.bas-carte { margin: 14px 0 0; text-align: center; font-size: 14px; color: var(--gris); }
+.bas-carte a { color: var(--bleu); font-weight: 600; text-decoration: none; }
