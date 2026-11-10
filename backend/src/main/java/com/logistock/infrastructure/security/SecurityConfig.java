@@ -37,6 +37,9 @@ public class SecurityConfig {
 
                         // Catalogue : lecture pour tous les rôles (le commercial doit voir les produits),
                         // écriture réservée au gestionnaire de stock.
+                        // Alertes et ruptures : réservées à l'administrateur et au gestionnaire de stock.
+                        .requestMatchers(HttpMethod.GET, "/api/produits/alertes", "/api/produits/ruptures")
+                        .hasAnyRole("ADMINISTRATEUR", "GESTIONNAIRE_STOCK")
                         .requestMatchers(HttpMethod.GET, "/api/produits/**", "/api/categories/**")
                         .hasAnyRole("ADMINISTRATEUR", "GESTIONNAIRE_STOCK", "COMMERCIAL")
                         .requestMatchers("/api/produits/**", "/api/categories/**")

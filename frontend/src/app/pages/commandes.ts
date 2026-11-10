@@ -16,6 +16,7 @@ interface LigneForm {
 }
 
 interface FormCommande {
+  id?: number;
   clientId: number | null;
   lignes: LigneForm[];
 }
@@ -42,7 +43,7 @@ interface FormCommande {
 
     @if (edition(); as f) {
       <div class="panneau">
-        <h3>Nouvelle commande</h3>
+        <h3>{{ f.id ? 'Modifier la commande n°' + f.id : 'Nouvelle commande' }}</h3>
         <label>Client
           <select [(ngModel)]="f.clientId">
             <option [ngValue]="null">— choisir —</option>
@@ -64,7 +65,10 @@ interface FormCommande {
                     }
                   </select>
                 </td>
-                <td class="num" data-label="Quantité"><input class="court" type="number" min="1" [(ngModel)]="l.quantite" /></td>
+                <td class="num" data-label="Quantité">
+                  <input class="court" type="number" min="1" [(ngModel)]="l.quantite" />
+                  @if (manque(l)) { <small class="manque">Stock insuffisant (disponible : {{ stock(l.produitId) }})</small> }
+                </td>
                 <td class="num" data-label="Prix">{{ prix(l.produitId) | fcfa }}</td>
                 <td class="num" data-label="Total">{{ prix(l.produitId) * l.quantite | fcfa }}</td>
                 <td data-label=""><button class="petit danger" (click)="retirerLigne(f, $index)">×</button></td>
@@ -78,7 +82,7 @@ interface FormCommande {
         </div>
         <p class="aide">Le stock ne diminue qu'à la validation de la commande.</p>
         <div class="actions">
-          <button (click)="creer(f)">Créer la commande</button>
+          <button (click)="enregistrer(f)">{{ f.id ? 'Enregistrer les modifications' : 'Créer la commande' }}</button>
           <button class="secondaire" (click)="edition.set(null)">Annuler</button>
         </div>
       </div>
@@ -116,6 +120,7 @@ interface FormCommande {
                   <button class="petit secondaire" (click)="facture(c)">Facture PDF</button>
                 }
                 @if (peutModifier && c.statut === 'EN_COURS') {
+                  <button class="petit secondaire" (click)="modifier(c)">Modifier</button>
                   <button class="petit" (click)="valider(c)">Valider</button>
                   <button class="petit danger" (click)="annuler(c)">Annuler</button>
                 }
@@ -215,15 +220,39 @@ export class CommandesPage implements OnInit {
     return f.lignes.reduce((somme, l) => somme + this.prix(l.produitId) * (l.quantite || 0), 0);
   }
 
-  creer(f: FormCommande) {
+  /** Charge une commande en cours dans le formulaire pour la corriger (client, produits, quantités). */
+  modifier(c: Commande) {
+    this.chargerReferentiels();
+    this.edition.set({
+      id: c.id,
+      clientId: c.clientId,
+      lignes: c.lignes.map((l) => ({ produitId: l.produitId, quantite: l.quantite })),
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  stock(produitId: number | null): number {
+    return this.produits().find((p) => p.id === produitId)?.quantite ?? 0;
+  }
+
+  /** Prévient avant la validation : la quantité demandée dépasse le stock actuel. */
+  manque(l: LigneForm): boolean {
+    return l.produitId !== null && (l.quantite || 0) > this.stock(l.produitId);
+  }
+
+  enregistrer(f: FormCommande) {
     if (!f.clientId) {
       this.msg.erreur({ error: { message: 'Choisissez un client' } });
       return;
     }
     const lignes = f.lignes.filter((l) => l.produitId !== null);
-    this.api.post<Commande>('/commandes', { clientId: f.clientId, lignes }).subscribe({
+    const corps = { clientId: f.clientId, lignes };
+    const requete = f.id
+      ? this.api.put<Commande>('/commandes/' + f.id, corps)
+      : this.api.post<Commande>('/commandes', corps);
+    requete.subscribe({
       next: (c) => {
-        this.msg.ok('Commande n°' + c.id + ' créée (en cours)');
+        this.msg.ok(f.id ? 'Commande n°' + c.id + ' modifiée' : 'Commande n°' + c.id + ' créée (en cours)');
         this.edition.set(null);
         this.charger();
       },

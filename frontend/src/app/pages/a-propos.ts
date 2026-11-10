@@ -26,7 +26,8 @@ const GUIDE: Record<Role, string[]> = {
   ],
   COMMERCIAL: [
     'Gérer le fichier clients et consulter l\'historique d\'achats de chaque client.',
-    'Créer une commande avec plusieurs produits, puis la valider ou l\'annuler.',
+    'Créer une commande avec plusieurs produits, la modifier tant qu\'elle est en cours, puis la valider ou l\'annuler.',
+    'Consulter le catalogue classé par catégorie (prix et stock disponible).',
     'Télécharger la facture au format PDF d\'une commande validée.',
   ],
 };
@@ -66,6 +67,7 @@ const GUIDE: Record<Role, string[]> = {
           <li>La validation est <strong>tout ou rien</strong> : si un seul produit manque, rien n'est modifié.</li>
           <li>Chaque vente validée crée une sortie de stock par produit et une facture numérotée (FAC-AAAA-NNNN).</li>
           <li>Le prix d'une commande est <strong>figé</strong> au moment de sa création.</li>
+          <li>Une commande <strong>en cours</strong> peut être modifiée (client, produits, quantités) ; une commande validée ne peut plus l'être.</li>
           <li>Un produit est « en alerte » quand son stock est inférieur ou égal à son seuil.</li>
         </ul>
       </section>
@@ -81,7 +83,7 @@ const GUIDE: Record<Role, string[]> = {
       </section>
 
       <section class="carte">
-        <h3>Alertes de stock</h3>
+        <h3>Alertes de stock (administrateur et gestionnaire de stock)</h3>
         <ul class="liste">
           <li>La cloche en bas du menu (en haut sur téléphone) affiche le nombre de produits sous leur seuil.</li>
           <li>Un message apparaît à la connexion, puis dès qu'un produit passe sous son seuil.</li>
