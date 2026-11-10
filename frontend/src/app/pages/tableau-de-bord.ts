@@ -66,11 +66,13 @@ const MOIS = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août'
             <span class="sous">au prix de vente</span></div>
         </div>
       }
-      <div class="kpi">
-        <div class="kpi-ico rouge"><app-icone nom="alerte" /></div>
-        <div><small>Alertes de stock</small><strong>{{ alertes().length }}</strong>
-          <span class="sous">dont {{ ruptures() }} en rupture</span></div>
-      </div>
+      @if (voitStock) {
+        <div class="kpi">
+          <div class="kpi-ico rouge"><app-icone nom="alerte" /></div>
+          <div><small>Alertes de stock</small><strong>{{ alertes().length }}</strong>
+            <span class="sous">dont {{ ruptures() }} en rupture</span></div>
+        </div>
+      }
     </div>
 
     <div class="grille-cartes">

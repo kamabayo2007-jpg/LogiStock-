@@ -28,4 +28,13 @@ public record Commande(
         }
         return new Commande(id, date, nouveau, clientId, clientNom, utilisateurId, lignes);
     }
+
+    /** Règle : seule une commande EN_COURS peut être modifiée (client et lignes), jamais une validée ou annulée. */
+    public Commande avecContenu(Long nouveauClientId, String nouveauClientNom, List<LigneCommande> nouvellesLignes) {
+        if (statut != StatutCommande.EN_COURS) {
+            throw new BusinessRuleException("Seule une commande en cours peut être modifiée"
+                    + " (cette commande est " + statut + ")");
+        }
+        return new Commande(id, date, statut, nouveauClientId, nouveauClientNom, utilisateurId, nouvellesLignes);
+    }
 }

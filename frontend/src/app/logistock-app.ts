@@ -20,7 +20,9 @@ import { MessageService } from './message.service';
         <aside class="side">
           <div class="haut">
             <div class="marque"><span class="logo">L</span> LogiStock <span class="sa">SA</span></div>
-            <app-cloche />
+            @if (auth.voitAlertes()) {
+              <app-cloche />
+            }
           </div>
           <nav>
             @for (e of auth.menu(); track e.chemin) {
@@ -53,10 +55,10 @@ export class LogiStockApp {
   role = libelleRole;
 
   constructor() {
-    // Les alertes de stock sont suivies tant qu'une personne est connectée.
+    // Les alertes de stock ne sont suivies que pour l'administrateur et le gestionnaire de stock.
     effect(() => {
-      const connecte = this.auth.utilisateur() !== null;
-      untracked(() => (connecte ? this.alertes.demarrer() : this.alertes.arreter()));
+      const suivre = this.auth.utilisateur() !== null && this.auth.voitAlertes();
+      untracked(() => (suivre ? this.alertes.demarrer() : this.alertes.arreter()));
     });
   }
 

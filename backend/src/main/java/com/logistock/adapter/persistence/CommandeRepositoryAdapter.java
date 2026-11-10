@@ -56,6 +56,17 @@ public class CommandeRepositoryAdapter implements CommandeRepository {
         return toDomain(saved);
     }
 
+    @Override
+    public Commande modifierContenu(Commande c) {
+        CommandeEntity saved = commandes.save(
+                new CommandeEntity(c.id(), c.date(), c.statut(), c.clientId(), c.utilisateurId()));
+        contenir.supprimerParCommande(saved.getId());
+        for (LigneCommande l : c.lignes()) {
+            contenir.save(new ContenirEntity(saved.getId(), l.produitId(), l.quantite(), l.prixUnitaire()));
+        }
+        return toDomain(saved);
+    }
+
     private Commande toDomain(CommandeEntity e) {
         List<ContenirEntity> lignesBrutes = contenir.findByCommandeIdOrderByProduitId(e.getId());
         Map<Long, ProduitEntity> parId = produits

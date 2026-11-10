@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,6 +52,11 @@ public class CommandeController {
     @GetMapping("/{id}")
     public CommandeResponse trouver(@PathVariable Long id) {
         return CommandeResponse.from(commandes.trouver(id));
+    }
+
+    @PutMapping("/{id}")
+    public CommandeResponse modifier(@PathVariable Long id, @Valid @RequestBody CommandeRequest requete) {
+        return CommandeResponse.from(commandes.modifier(id, requete.clientId(), requete.toDemandes()));
     }
 
     @PostMapping("/{id}/validation")
