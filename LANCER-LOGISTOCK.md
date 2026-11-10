@@ -64,6 +64,18 @@ http://localhost:4200
 
 La base est créée toute seule à partir de `docs/conception/schema.sql` et `seed.sql`.
 
+### Si le port 4200, 8080 ou 3306 est déjà pris
+Fermer l'autre programme (ancienne API, XAMPP...) puis relancer.
+
+### Changer les mots de passe (facultatif)
+Copier `.env.example` en `.env`, modifier les valeurs, puis `docker compose up --build`.
+
+### Voir ce qui se passe
+```
+docker compose ps            (état des 3 services)
+docker compose logs -f backend
+```
+
 ### Arrêter
 ```
 docker compose down          (garde les données)
