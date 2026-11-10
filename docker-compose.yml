@@ -1,11 +1,17 @@
+# LogiStock SA : base de données + API + site web
+# Lancement : docker compose up --build   puis   http://localhost:4200
 services:
   db:
     image: mariadb:10.11
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_PASSWORD:-rootpass}
       MARIADB_DATABASE: logistock
+      TZ: Africa/Bamako
     volumes:
       - db_data:/var/lib/mysql
+      # Scripts exécutés uniquement à la première création du volume
       - ./docs/conception/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
       - ./docs/conception/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     healthcheck:
@@ -16,19 +22,27 @@ services:
 
   backend:
     build: ./backend
+    restart: unless-stopped
     environment:
       DB_URL: jdbc:mariadb://db:3306/logistock
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD:-rootpass}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-a-changer-dev-secret-a-changer}
-      CORS_ORIGINS: http://localhost:4200,http://localhost
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200,http://localhost}
+      TZ: Africa/Bamako
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "8080:8080"
 
-  # frontend (Angular + nginx) : à ajouter quand le dossier frontend/ sera prêt
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
 
 volumes:
   db_data:

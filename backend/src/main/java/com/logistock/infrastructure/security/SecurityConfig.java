@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/health").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/inscription", "/api/health").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMINISTRATEUR")
                         .requestMatchers("/api/users/**").hasRole("ADMINISTRATEUR")
 
@@ -47,6 +47,13 @@ public class SecurityConfig {
                         .hasAnyRole("ADMINISTRATEUR", "GESTIONNAIRE_STOCK")
                         .requestMatchers("/api/mouvements/**")
                         .hasRole("GESTIONNAIRE_STOCK")
+
+                        // Ventes : le commercial crée, valide et annule ; l'administrateur consulte.
+                        // (Le gestionnaire de stock n'a pas accès aux clients ni aux commandes.)
+                        .requestMatchers(HttpMethod.GET, "/api/clients/**", "/api/commandes/**")
+                        .hasAnyRole("ADMINISTRATEUR", "COMMERCIAL")
+                        .requestMatchers("/api/clients/**", "/api/commandes/**")
+                        .hasRole("COMMERCIAL")
 
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
