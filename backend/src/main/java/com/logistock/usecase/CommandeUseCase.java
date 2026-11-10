@@ -62,27 +62,28 @@ public class CommandeUseCase {
         User user = utilisateur(emailUtilisateur);
         Client client = clients.findById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
-        if (demandes == null || demandes.isEmpty()) {
-            throw new BusinessRuleException("Une commande doit contenir au moins un produit");
-        }
-
-        Map<Long, Integer> parProduit = new LinkedHashMap<>();
-        for (LigneDemande d : demandes) {
-            if (d.quantite() <= 0) {
-                throw new BusinessRuleException("La quantité doit être supérieure à 0");
-            }
-            parProduit.merge(d.produitId(), d.quantite(), Integer::sum);
-        }
-
-        List<LigneCommande> lignes = new ArrayList<>();
-        for (Map.Entry<Long, Integer> e : parProduit.entrySet()) {
-            Produit p = produits.findById(e.getKey())
-                    .orElseThrow(() -> new ResourceNotFoundException("Produit introuvable : " + e.getKey()));
-            lignes.add(new LigneCommande(p.id(), p.reference(), p.designation(), e.getValue(), p.prix()));
-        }
+        List<LigneCommande> lignes = construireLignes(demandes, List.of());
 
         return commandes.save(new Commande(null, LocalDateTime.now(), StatutCommande.EN_COURS,
                 client.id(), client.nomComplet(), user.id(), lignes));
+    }
+
+    /**
+     * Modifie une commande EN_COURS (client, produits, quantités). Le stock n'est pas touché.
+     * Les mêmes contrôles qu'à la création s'appliquent. Un produit déjà présent dans la commande
+     * garde son prix figé ; un produit ajouté prend le prix du jour.
+     */
+    public Commande modifier(Long id, Long clientId, List<LigneDemande> demandes) {
+        Commande commande = commandes.findByIdForUpdate(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Commande introuvable"));
+        if (commande.statut() != StatutCommande.EN_COURS) {
+            throw new BusinessRuleException("Seule une commande en cours peut être modifiée"
+                    + " (cette commande est " + commande.statut() + ")");
+        }
+        Client client = clients.findById(clientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
+        List<LigneCommande> lignes = construireLignes(demandes, commande.lignes());
+        return commandes.modifierContenu(commande.avecContenu(client.id(), client.nomComplet(), lignes));
     }
 
     /**
@@ -142,6 +143,33 @@ public class CommandeUseCase {
     public List<Commande> historiqueClient(Long clientId) {
         clients.findById(clientId).orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
         return commandes.findAll(null, clientId);
+    }
+
+    /** Contrôle les lignes demandées, regroupe les doublons et fige les prix (anciens prix conservés si le produit y était déjà). */
+    private List<LigneCommande> construireLignes(List<LigneDemande> demandes, List<LigneCommande> existantes) {
+        if (demandes == null || demandes.isEmpty()) {
+            throw new BusinessRuleException("Une commande doit contenir au moins un produit");
+        }
+        Map<Long, Integer> parProduit = new LinkedHashMap<>();
+        for (LigneDemande d : demandes) {
+            if (d.quantite() <= 0) {
+                throw new BusinessRuleException("La quantité doit être supérieure à 0");
+            }
+            parProduit.merge(d.produitId(), d.quantite(), Integer::sum);
+        }
+        Map<Long, LigneCommande> anciennes = new LinkedHashMap<>();
+        for (LigneCommande l : existantes) {
+            anciennes.put(l.produitId(), l);
+        }
+        List<LigneCommande> lignes = new ArrayList<>();
+        for (Map.Entry<Long, Integer> e : parProduit.entrySet()) {
+            Produit p = produits.findById(e.getKey())
+                    .orElseThrow(() -> new ResourceNotFoundException("Produit introuvable : " + e.getKey()));
+            LigneCommande ancienne = anciennes.get(p.id());
+            lignes.add(new LigneCommande(p.id(), p.reference(), p.designation(), e.getValue(),
+                    ancienne != null ? ancienne.prixUnitaire() : p.prix()));
+        }
+        return lignes;
     }
 
     private void emettreFacture(Commande commande) {

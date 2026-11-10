@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../api.service';
@@ -34,12 +34,45 @@ interface FormProduit {
 
     <div class="barre">
       <input type="search" placeholder="Rechercher (désignation ou référence)…" [(ngModel)]="recherche" (ngModelChange)="charger()" />
-      <div class="onglets">
-        <button [class.actif]="vue === 'tous'" (click)="changerVue('tous')">Tous</button>
-        <button [class.actif]="vue === 'alertes'" (click)="changerVue('alertes')">Alertes</button>
-        <button [class.actif]="vue === 'ruptures'" (click)="changerVue('ruptures')">Ruptures</button>
-      </div>
+      @if (!commercial) {
+        <div class="onglets">
+          <button [class.actif]="vue === 'tous'" (click)="changerVue('tous')">Tous</button>
+          <button [class.actif]="vue === 'alertes'" (click)="changerVue('alertes')">Alertes</button>
+          <button [class.actif]="vue === 'ruptures'" (click)="changerVue('ruptures')">Ruptures</button>
+        </div>
+      }
     </div>
+
+    @if (commercial) {
+      <div class="onglets categories">
+        <button [class.actif]="filtreCat() === null" (click)="filtreCat.set(null)">Toutes</button>
+        @for (c of categories(); track c.id) {
+          <button [class.actif]="filtreCat() === c.id" (click)="filtreCat.set(c.id)">{{ c.nom }}</button>
+        }
+      </div>
+      @for (g of groupes(); track g.nom) {
+        <section class="panneau">
+          <h3>{{ g.nom }} <span class="badge">{{ g.produits.length }}</span></h3>
+          <div class="tableau">
+            <table>
+              <thead><tr><th>Référence</th><th>Désignation</th><th class="num">Prix</th><th class="num">Stock disponible</th></tr></thead>
+              <tbody>
+                @for (p of g.produits; track p.id) {
+                  <tr>
+                    <td data-label="Référence">{{ p.reference }}</td>
+                    <td data-label="Désignation">{{ p.designation }}</td>
+                    <td data-label="Prix" class="num">{{ p.prix | fcfa }}</td>
+                    <td data-label="Stock disponible" class="num"><strong>{{ p.quantite }}</strong></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      } @empty {
+        <p class="vide">Aucun produit.</p>
+      }
+    }
 
     @if (edition(); as f) {
       <div class="panneau">
@@ -69,6 +102,7 @@ interface FormProduit {
       </div>
     }
 
+    @if (!commercial) {
     <app-tri-mobile [t]="t" [colonnes]="[{ cle: 'designation', label: 'Désignation' }, { cle: 'reference', label: 'Référence' }, { cle: 'categorieNom', label: 'Catégorie' }, { cle: 'prix', label: 'Prix' }, { cle: 'quantite', label: 'Stock' }, { cle: 'etat', label: 'État' }]" />
 
     <div class="tableau">
@@ -113,6 +147,7 @@ interface FormProduit {
       </table>
       <app-pagination [t]="t" />
     </div>
+    }
 
     @if (peutModifier) {
       <div class="panneau">
@@ -150,11 +185,34 @@ export class ProduitsPage implements OnInit {
     return this.auth.a('GESTIONNAIRE_STOCK');
   }
 
+  /** Le commercial voit le catalogue classé par catégorie, sans alertes ni ruptures. */
+  get commercial() {
+    return this.auth.a('COMMERCIAL');
+  }
+
+  filtreCat = signal<number | null>(null);
+
+  groupes = computed(() => {
+    const parNom = new Map<string, Produit[]>();
+    for (const p of this.produits()) {
+      if (this.filtreCat() !== null && p.categorieId !== this.filtreCat()) continue;
+      const liste = parNom.get(p.categorieNom) ?? [];
+      liste.push(p);
+      parNom.set(p.categorieNom, liste);
+    }
+    return [...parNom.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([nom, produits]) => ({
+        nom,
+        produits: [...produits].sort((a, b) => a.designation.localeCompare(b.designation)),
+      }));
+  });
+
   ngOnInit() {
     // ?vue=alertes (lien de la cloche) ouvre directement la liste des produits en alerte.
     this.route.queryParamMap.subscribe((q) => {
       const v = q.get('vue');
-      this.vue = v === 'alertes' || v === 'ruptures' ? v : 'tous';
+      this.vue = !this.commercial && (v === 'alertes' || v === 'ruptures') ? v : 'tous';
       this.charger();
     });
     this.chargerCategories();

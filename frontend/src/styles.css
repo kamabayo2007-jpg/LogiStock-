@@ -256,3 +256,7 @@ a.icone-btn { text-decoration: none; cursor: pointer; }
 .alerte.ok { background: #dcfce7; color: #166534; }
 .bas-carte { margin: 14px 0 0; text-align: center; font-size: 14px; color: var(--gris); }
 .bas-carte a { color: var(--bleu); font-weight: 600; text-decoration: none; }
+.manque { display: block; color: var(--rouge); font-size: 12px; margin-top: 4px; }
+.onglets.categories { flex-wrap: wrap; margin-bottom: 16px; width: fit-content; max-width: 100%; }
+.manque { display: block; color: var(--rouge); font-size: 12px; margin-top: 4px; }
+.onglets.categories { flex-wrap: wrap; margin-bottom: 16px; width: fit-content; max-width: 100%; }

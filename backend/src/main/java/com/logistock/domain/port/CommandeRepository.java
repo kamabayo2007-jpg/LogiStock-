@@ -17,4 +17,7 @@ public interface CommandeRepository {
 
     /** Enregistre la commande et ses lignes. */
     Commande save(Commande commande);
+
+    /** Remplace le client et toutes les lignes d'une commande existante (modification d'une commande en cours). */
+    Commande modifierContenu(Commande commande);
 }

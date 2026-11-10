@@ -47,6 +47,12 @@ export class AuthService {
     return menu;
   });
 
+  /** Alertes et ruptures de stock : réservées à l'administrateur et au gestionnaire de stock. */
+  readonly voitAlertes = computed(() => {
+    const role = this.utilisateur()?.role;
+    return role === 'ADMINISTRATEUR' || role === 'GESTIONNAIRE_STOCK';
+  });
+
   token(): string | null {
     try {
       return localStorage.getItem(CLE_TOKEN);
