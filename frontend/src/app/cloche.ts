@@ -9,10 +9,10 @@ import { Icone } from './icone';
   imports: [Icone],
   host: { class: 'cloche' },
   template: `
-    <button class="icone-btn" title="Alertes de stock" aria-label="Alertes de stock" (click)="ouvert.set(!ouvert())">
+    <button class="icone-btn" title="Alertes de stock" aria-label="Alertes de stock" (click)="basculer()">
       <app-icone nom="cloche" />
-      @if (al.nombre() > 0) {
-        <span class="pastille">{{ al.nombre() }}</span>
+      @if (al.nonLues() > 0) {
+        <span class="pastille">{{ al.nonLues() }}</span>
       }
     </button>
     @if (ouvert()) {
@@ -40,7 +40,7 @@ import { Icone } from './icone';
         <button class="plein petit" (click)="voir()">Voir les produits en alerte</button>
         @switch (al.etat()) {
           @case ('a-activer') {
-            <button class="plein petit secondaire" (click)="al.activerNotifications()">🔔 Activer les notifications du navigateur</button>
+            <button class="plein petit secondaire" (click)="al.activerNotifications()"><app-icone nom="cloche" [taille]="16" /> Activer les notifications du navigateur</button>
           }
           @case ('actives') {
             <small class="aide">Notifications du navigateur activées.</small>
@@ -60,6 +60,11 @@ export class Cloche {
   al = inject(AlertesService);
   private router = inject(Router);
   ouvert = signal(false);
+
+  basculer() {
+    this.ouvert.set(!this.ouvert());
+    if (this.ouvert()) this.al.marquerLues(); // ouvrir la cloche = avoir lu les alertes
+  }
 
   voir() {
     this.ouvert.set(false);

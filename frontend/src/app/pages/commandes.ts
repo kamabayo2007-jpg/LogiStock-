@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../api.service';
 import { AlertesService } from '../alertes.service';
 import { AuthService } from '../auth.service';
@@ -9,6 +10,7 @@ import { MessageService } from '../message.service';
 import { Client, Commande, Produit } from '../models';
 import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
+import { Icone } from '../icone';
 
 interface LigneForm {
   produitId: number | null;
@@ -23,12 +25,12 @@ interface FormCommande {
 
 @Component({
   selector: 'app-commandes',
-  imports: [FormsModule, FcfaPipe, DatePipe, Pagination, TriMobile],
+  imports: [FormsModule, FcfaPipe, DatePipe, Pagination, TriMobile, Icone],
   template: `
     <div class="entete">
-      <div><h2>Commandes</h2><p class="sous-titre">Création, validation et facturation</p></div>
+      <div class="titre-page"><span class="titre-ico"><app-icone nom="commandes" [taille]="22" /></span><div><h2>Commandes</h2><p class="sous-titre">Création, validation et facturation</p></div></div>
       @if (peutModifier) {
-        <button (click)="nouvelle()">+ Nouvelle commande</button>
+        <button (click)="nouvelle()"><app-icone nom="plus" [taille]="16" /> Nouvelle commande</button>
       }
     </div>
 
@@ -71,19 +73,19 @@ interface FormCommande {
                 </td>
                 <td class="num" data-label="Prix">{{ prix(l.produitId) | fcfa }}</td>
                 <td class="num" data-label="Total">{{ prix(l.produitId) * l.quantite | fcfa }}</td>
-                <td data-label=""><button class="petit danger" (click)="retirerLigne(f, $index)">×</button></td>
+                <td data-label=""><button class="petit danger" (click)="retirerLigne(f, $index)" aria-label="Retirer la ligne"><app-icone nom="corbeille" [taille]="14" /></button></td>
               </tr>
             }
           </tbody>
         </table>
         <div class="entete">
-          <button class="secondaire" (click)="ajouterLigne(f)">+ Ajouter un produit</button>
+          <button class="secondaire" (click)="ajouterLigne(f)"><app-icone nom="panier-plus" [taille]="16" /> Ajouter un produit</button>
           <strong class="total">Total : {{ totalForm(f) | fcfa }}</strong>
         </div>
         <p class="aide">Le stock ne diminue qu'à la validation de la commande.</p>
         <div class="actions">
-          <button (click)="enregistrer(f)">{{ f.id ? 'Enregistrer les modifications' : 'Créer la commande' }}</button>
-          <button class="secondaire" (click)="edition.set(null)">Annuler</button>
+          <button (click)="enregistrer(f)"><app-icone nom="enregistrer" [taille]="16" /> {{ f.id ? 'Enregistrer les modifications' : 'Créer la commande' }}</button>
+          <button class="secondaire" (click)="edition.set(null)"><app-icone nom="croix" [taille]="16" /> Annuler</button>
         </div>
       </div>
     }
@@ -104,25 +106,26 @@ interface FormCommande {
         </thead>
         <tbody>
           @for (c of t.lignes(); track c.id) {
-            <tr>
+            <tr class="cliquable" title="Cliquer pour voir le détail" (click)="basculer(c.id)">
               <td data-label="N°">#{{ c.id }}</td>
               <td data-label="Date">{{ c.date | date: 'dd/MM/yyyy HH:mm' }}</td>
               <td data-label="Client">{{ c.clientNom }}</td>
               <td data-label="Statut">
                 <span class="badge" [class.orange]="c.statut === 'EN_COURS'" [class.vert]="c.statut === 'VALIDEE'" [class.rouge]="c.statut === 'ANNULEE'">
+                  <app-icone [nom]="c.statut === 'VALIDEE' ? 'valider' : c.statut === 'ANNULEE' ? 'croix' : 'horloge'" [taille]="12" />
                   {{ libelle(c.statut) }}
                 </span>
               </td>
               <td data-label="Total" class="num">{{ c.total | fcfa }}</td>
-              <td data-label="" class="actions">
-                <button class="petit secondaire" (click)="basculer(c.id)">{{ ouverte() === c.id ? 'Masquer' : 'Détail' }}</button>
+              <td data-label="" class="actions" (click)="$event.stopPropagation()">
+                <button class="petit secondaire" (click)="basculer(c.id)"><app-icone nom="oeil" [taille]="16" /> {{ ouverte() === c.id ? 'Masquer' : 'Détail' }}</button>
                 @if (c.statut === 'VALIDEE') {
-                  <button class="petit secondaire" (click)="facture(c)">Facture PDF</button>
+                  <button class="petit secondaire" (click)="facture(c)"><app-icone nom="pdf" [taille]="16" /> Facture PDF</button>
                 }
                 @if (peutModifier && c.statut === 'EN_COURS') {
-                  <button class="petit secondaire" (click)="modifier(c)">Modifier</button>
-                  <button class="petit" (click)="valider(c)">Valider</button>
-                  <button class="petit danger" (click)="annuler(c)">Annuler</button>
+                  <button class="petit secondaire" (click)="modifier(c)"><app-icone nom="crayon" [taille]="16" /> Modifier</button>
+                  <button class="petit" (click)="valider(c)"><app-icone nom="valider" [taille]="16" /> Valider</button>
+                  <button class="petit danger" (click)="annuler(c)"><app-icone nom="croix" [taille]="16" /> Annuler</button>
                 }
               </td>
             </tr>
@@ -159,6 +162,7 @@ export class CommandesPage implements OnInit {
   private auth = inject(AuthService);
   private msg = inject(MessageService);
   private alertes = inject(AlertesService);
+  private route = inject(ActivatedRoute);
 
   commandes = signal<Commande[]>([]);
   t = new DonneesTable<Commande>(() => this.commandes(), 'date', -1);
@@ -173,7 +177,14 @@ export class CommandesPage implements OnInit {
   }
 
   ngOnInit() {
-    this.charger();
+    // Liens du tableau de bord : ?statut=EN_COURS filtre la liste, ?ouvrir=12 ouvre le détail de la commande 12.
+    this.route.queryParamMap.subscribe((q) => {
+      const s = q.get('statut');
+      this.filtreStatut = s === 'EN_COURS' || s === 'VALIDEE' || s === 'ANNULEE' ? s : '';
+      const o = Number(q.get('ouvrir'));
+      this.ouverte.set(o > 0 ? o : null);
+      this.charger();
+    });
     if (this.peutModifier) {
       this.chargerReferentiels();
     }

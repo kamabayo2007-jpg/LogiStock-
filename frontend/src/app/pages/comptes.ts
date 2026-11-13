@@ -6,6 +6,7 @@ import { MessageService } from '../message.service';
 import { ROLES, Role, Utilisateur, libelleRole } from '../models';
 import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
+import { Icone } from '../icone';
 
 interface FormCompte {
   id?: number;
@@ -17,11 +18,11 @@ interface FormCompte {
 
 @Component({
   selector: 'app-comptes',
-  imports: [FormsModule, Pagination, TriMobile],
+  imports: [FormsModule, Pagination, TriMobile, Icone],
   template: `
     <div class="entete">
-      <div><h2>Comptes utilisateurs</h2><p class="sous-titre">Accès à l'application et rôles</p></div>
-      <button (click)="nouveau()">+ Nouveau compte</button>
+      <div class="titre-page"><span class="titre-ico"><app-icone nom="comptes" [taille]="22" /></span><div><h2>Comptes utilisateurs</h2><p class="sous-titre">Accès à l'application et rôles</p></div></div>
+      <button (click)="nouveau()"><app-icone nom="plus" [taille]="16" /> Nouveau compte</button>
     </div>
 
     @if (edition(); as f) {
@@ -42,8 +43,8 @@ interface FormCompte {
           </label>
         </div>
         <div class="actions">
-          <button (click)="enregistrer(f)">Enregistrer</button>
-          <button class="secondaire" (click)="edition.set(null)">Annuler</button>
+          <button (click)="enregistrer(f)"><app-icone nom="enregistrer" [taille]="16" /> Enregistrer</button>
+          <button class="secondaire" (click)="edition.set(null)"><app-icone nom="croix" [taille]="16" /> Annuler</button>
         </div>
       </div>
     }
@@ -68,11 +69,12 @@ interface FormCompte {
               <td data-label="E-mail">{{ u.email }}</td>
               <td data-label="Rôle">{{ role(u.role) }}</td>
               <td data-label="État">
-                <span class="badge" [class.vert]="u.actif" [class.rouge]="!u.actif">{{ u.actif ? 'Actif' : 'Désactivé' }}</span>
+                <span class="badge" [class.vert]="u.actif" [class.rouge]="!u.actif"><app-icone [nom]="u.actif ? 'valider' : 'croix'" [taille]="12" /> {{ u.actif ? 'Actif' : 'Désactivé' }}</span>
               </td>
               <td data-label="" class="actions">
-                <button class="petit secondaire" (click)="modifier(u)">Modifier</button>
+                <button class="petit secondaire" (click)="modifier(u)"><app-icone nom="crayon" [taille]="16" /> Modifier</button>
                 <button class="petit" [class.danger]="u.actif" [class.secondaire]="!u.actif" (click)="basculer(u)">
+                  <app-icone [nom]="u.actif ? 'croix' : 'valider'" [taille]="16" />
                   {{ u.actif ? 'Désactiver' : 'Réactiver' }}
                 </button>
               </td>

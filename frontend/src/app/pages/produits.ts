@@ -9,6 +9,7 @@ import { MessageService } from '../message.service';
 import { Categorie, Produit } from '../models';
 import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
+import { Icone } from '../icone';
 
 interface FormProduit {
   id?: number;
@@ -23,12 +24,12 @@ interface FormProduit {
 
 @Component({
   selector: 'app-produits',
-  imports: [FormsModule, FcfaPipe, Pagination, TriMobile],
+  imports: [FormsModule, FcfaPipe, Pagination, TriMobile, Icone],
   template: `
     <div class="entete">
-      <div><h2>Produits</h2><p class="sous-titre">Catalogue et niveaux de stock</p></div>
+      <div class="titre-page"><span class="titre-ico"><app-icone nom="produits" [taille]="22" /></span><div><h2>Produits</h2><p class="sous-titre">Catalogue et niveaux de stock</p></div></div>
       @if (peutModifier) {
-        <button (click)="nouveau()">+ Nouveau produit</button>
+        <button (click)="nouveau()"><app-icone nom="plus" [taille]="16" /> Nouveau produit</button>
       }
     </div>
 
@@ -36,9 +37,9 @@ interface FormProduit {
       <input type="search" placeholder="Rechercher (désignation ou référence)…" [(ngModel)]="recherche" (ngModelChange)="charger()" />
       @if (!commercial) {
         <div class="onglets">
-          <button [class.actif]="vue === 'tous'" (click)="changerVue('tous')">Tous</button>
-          <button [class.actif]="vue === 'alertes'" (click)="changerVue('alertes')">Alertes</button>
-          <button [class.actif]="vue === 'ruptures'" (click)="changerVue('ruptures')">Ruptures</button>
+          <button [class.actif]="vue === 'tous'" (click)="changerVue('tous')"><app-icone nom="produits" [taille]="14" /> Tous</button>
+          <button [class.actif]="vue === 'alertes'" (click)="changerVue('alertes')"><app-icone nom="alerte" [taille]="14" /> Alertes</button>
+          <button [class.actif]="vue === 'ruptures'" (click)="changerVue('ruptures')"><app-icone nom="croix" [taille]="14" /> Ruptures</button>
         </div>
       }
     </div>
@@ -52,7 +53,7 @@ interface FormProduit {
       </div>
       @for (g of groupes(); track g.nom) {
         <section class="panneau">
-          <h3>{{ g.nom }} <span class="badge">{{ g.produits.length }}</span></h3>
+          <h3><app-icone nom="etiquette" [taille]="16" /> {{ g.nom }} <span class="badge">{{ g.produits.length }}</span></h3>
           <div class="tableau">
             <table>
               <thead><tr><th>Référence</th><th>Désignation</th><th class="num">Prix</th><th class="num">Stock disponible</th></tr></thead>
@@ -96,8 +97,8 @@ interface FormProduit {
           <label class="large">Description <input [(ngModel)]="f.description" /></label>
         </div>
         <div class="actions">
-          <button (click)="enregistrer(f)">Enregistrer</button>
-          <button class="secondaire" (click)="edition.set(null)">Annuler</button>
+          <button (click)="enregistrer(f)"><app-icone nom="enregistrer" [taille]="16" /> Enregistrer</button>
+          <button class="secondaire" (click)="edition.set(null)"><app-icone nom="croix" [taille]="16" /> Annuler</button>
         </div>
       </div>
     }
@@ -129,14 +130,14 @@ interface FormProduit {
               <td data-label="Stock" class="num"><strong>{{ p.quantite }}</strong></td>
               <td data-label="Seuil" class="num">{{ p.seuilAlerte }}</td>
               <td data-label="État">
-                @if (p.quantite === 0) { <span class="badge rouge">Rupture</span> }
-                @else if (p.quantite <= p.seuilAlerte) { <span class="badge orange">Alerte</span> }
-                @else { <span class="badge vert">OK</span> }
+                @if (p.quantite === 0) { <span class="badge rouge"><app-icone nom="croix" [taille]="12" /> Rupture</span> }
+                @else if (p.quantite <= p.seuilAlerte) { <span class="badge orange"><app-icone nom="alerte" [taille]="12" /> Alerte</span> }
+                @else { <span class="badge vert"><app-icone nom="valider" [taille]="12" /> OK</span> }
               </td>
               @if (peutModifier) {
                 <td data-label="" class="actions">
-                  <button class="petit secondaire" (click)="modifier(p)">Modifier</button>
-                  <button class="petit danger" (click)="supprimer(p)">Supprimer</button>
+                  <button class="petit secondaire" (click)="modifier(p)"><app-icone nom="crayon" [taille]="16" /> Modifier</button>
+                  <button class="petit danger" (click)="supprimer(p)"><app-icone nom="corbeille" [taille]="16" /> Supprimer</button>
                 </td>
               }
             </tr>
@@ -157,7 +158,7 @@ interface FormProduit {
         </div>
         <div class="barre">
           <input placeholder="Nouvelle catégorie" [(ngModel)]="nouvelleCategorie" (keyup.enter)="ajouterCategorie()" />
-          <button class="secondaire" (click)="ajouterCategorie()">Ajouter</button>
+          <button class="secondaire" (click)="ajouterCategorie()"><app-icone nom="plus" [taille]="16" /> Ajouter</button>
         </div>
       </div>
     }

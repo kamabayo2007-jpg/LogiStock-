@@ -38,40 +38,46 @@ const MOIS = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août'
 
     <div class="kpis">
       @if (voitVentes) {
-        <div class="kpi">
+        <a class="kpi cliquable" routerLink="/commandes" [queryParams]="{ statut: 'VALIDEE' }" title="Voir le détail">
           <div class="kpi-ico vert"><app-icone nom="argent" /></div>
           <div><small>Chiffre d'affaires</small><strong>{{ chiffreAffaires() | fcfa }}</strong>
             <span class="sous">{{ validees().length }} commande(s) validée(s)</span></div>
-        </div>
-        <div class="kpi">
+          <app-icone class="kpi-fleche" nom="droite" [taille]="18" />
+        </a>
+        <a class="kpi cliquable" routerLink="/commandes" [queryParams]="{ statut: 'EN_COURS' }" title="Voir le détail">
           <div class="kpi-ico orange"><app-icone nom="horloge" /></div>
           <div><small>Commandes en cours</small><strong>{{ enCours() }}</strong>
             <span class="sous">à valider ou annuler</span></div>
-        </div>
-        <div class="kpi">
+          <app-icone class="kpi-fleche" nom="droite" [taille]="18" />
+        </a>
+        <a class="kpi cliquable" routerLink="/clients" title="Voir le détail">
           <div class="kpi-ico violet"><app-icone nom="clients" /></div>
           <div><small>Clients</small><strong>{{ clients().length }}</strong>
             <span class="sous">dans le fichier client</span></div>
-        </div>
+          <app-icone class="kpi-fleche" nom="droite" [taille]="18" />
+        </a>
       }
-      <div class="kpi">
+      <a class="kpi cliquable" routerLink="/produits" title="Voir le détail">
         <div class="kpi-ico bleu"><app-icone nom="produits" /></div>
         <div><small>Produits au catalogue</small><strong>{{ produits().length }}</strong>
           <span class="sous">{{ unites() }} unités en stock</span></div>
-      </div>
+          <app-icone class="kpi-fleche" nom="droite" [taille]="18" />
+      </a>
       @if (voitStock) {
-        <div class="kpi">
+        <a class="kpi cliquable" routerLink="/produits" title="Voir le détail">
           <div class="kpi-ico bleu"><app-icone nom="argent" /></div>
           <div><small>Valeur du stock</small><strong>{{ valeurStock() | fcfa }}</strong>
             <span class="sous">au prix de vente</span></div>
-        </div>
+          <app-icone class="kpi-fleche" nom="droite" [taille]="18" />
+        </a>
       }
       @if (voitStock) {
-        <div class="kpi">
+        <a class="kpi cliquable" routerLink="/produits" [queryParams]="{ vue: 'alertes' }" title="Voir le détail">
           <div class="kpi-ico rouge"><app-icone nom="alerte" /></div>
           <div><small>Alertes de stock</small><strong>{{ alertes().length }}</strong>
             <span class="sous">dont {{ ruptures() }} en rupture</span></div>
-        </div>
+          <app-icone class="kpi-fleche" nom="droite" [taille]="18" />
+        </a>
       }
     </div>
 
@@ -95,9 +101,9 @@ const MOIS = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août'
           <div class="donut-wrap">
             <div class="donut" [style.background]="degrade()"><div class="trou">{{ commandes().length }}</div></div>
             <ul class="legende">
-              <li><i class="p vert"></i> Validées <strong>{{ validees().length }}</strong></li>
-              <li><i class="p orange"></i> En cours <strong>{{ enCours() }}</strong></li>
-              <li><i class="p rouge"></i> Annulées <strong>{{ annulees() }}</strong></li>
+              <li class="cliquable" routerLink="/commandes" [queryParams]="{ statut: 'VALIDEE' }" title="Voir ces commandes"><i class="p vert"></i> Validées <strong>{{ validees().length }}</strong></li>
+              <li class="cliquable" routerLink="/commandes" [queryParams]="{ statut: 'EN_COURS' }" title="Voir ces commandes"><i class="p orange"></i> En cours <strong>{{ enCours() }}</strong></li>
+              <li class="cliquable" routerLink="/commandes" [queryParams]="{ statut: 'ANNULEE' }" title="Voir ces commandes"><i class="p rouge"></i> Annulées <strong>{{ annulees() }}</strong></li>
             </ul>
           </div>
         </section>
@@ -105,7 +111,7 @@ const MOIS = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août'
         <section class="carte">
           <h3>Produits les plus vendus</h3>
           @for (b of topProduits(); track b.nom) {
-            <div class="hbar">
+            <div class="hbar cliquable" routerLink="/produits" title="Voir les produits">
               <div class="hbar-t"><span>{{ b.nom }}</span><strong>{{ b.texte }}</strong></div>
               <div class="piste"><div class="jauge" [style.width.%]="b.pct"></div></div>
             </div>
@@ -118,7 +124,7 @@ const MOIS = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août'
       <section class="carte">
         <h3>Valeur du stock par catégorie</h3>
         @for (b of stockParCategorie(); track b.nom) {
-          <div class="hbar">
+          <div class="hbar cliquable" routerLink="/produits" title="Voir les produits">
             <div class="hbar-t"><span>{{ b.nom }}</span><strong>{{ b.texte }}</strong></div>
             <div class="piste"><div class="jauge bleu" [style.width.%]="b.pct"></div></div>
           </div>
@@ -142,7 +148,7 @@ const MOIS = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août'
       <section class="carte">
         <h3>Produits à réapprovisionner</h3>
         @for (p of aReapprovisionner(); track p.id) {
-          <div class="ligne-alerte">
+          <div class="ligne-alerte cliquable" routerLink="/produits" [queryParams]="{ vue: voitStock ? 'alertes' : null }" title="Voir les produits">
             <div><strong>{{ p.designation }}</strong><small>{{ p.reference }} · seuil {{ p.seuilAlerte }}</small></div>
             @if (p.quantite === 0) {
               <span class="badge rouge">Rupture</span>
@@ -164,7 +170,7 @@ const MOIS = ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août'
               <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Statut</th><th class="num">Total</th></tr></thead>
               <tbody>
                 @for (c of dernieres(); track c.id) {
-                  <tr>
+                  <tr class="cliquable" routerLink="/commandes" [queryParams]="{ ouvrir: c.id }" title="Ouvrir cette commande">
                     <td data-label="N°">#{{ c.id }}</td>
                     <td data-label="Date">{{ c.date | date: 'dd/MM/yyyy HH:mm' }}</td>
                     <td data-label="Client">{{ c.clientNom }}</td>
