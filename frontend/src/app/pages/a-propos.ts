@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { AuthService } from '../auth.service';
+import { Icone } from '../icone';
 import { Role, libelleRole } from '../models';
 
 /** Noms des membres du groupe : à compléter (la section n'apparaît que si la liste n'est pas vide). */
@@ -34,9 +35,10 @@ const GUIDE: Record<Role, string[]> = {
 
 @Component({
   selector: 'app-a-propos',
+  imports: [Icone],
   template: `
     <div class="entete">
-      <div><h2>À propos</h2><p class="sous-titre">Présentation de l'application et guide d'utilisation</p></div>
+      <div class="titre-page"><span class="titre-ico"><app-icone nom="info" [taille]="22" /></span><div><h2>À propos</h2><p class="sous-titre">Présentation de l'application et guide d'utilisation</p></div></div>
     </div>
 
     <section class="panneau apropos-tete">
