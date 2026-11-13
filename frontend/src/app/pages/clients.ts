@@ -8,6 +8,7 @@ import { MessageService } from '../message.service';
 import { Client, Commande } from '../models';
 import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
+import { Icone } from '../icone';
 
 interface FormClient {
   id?: number;
@@ -20,12 +21,12 @@ interface FormClient {
 
 @Component({
   selector: 'app-clients',
-  imports: [FormsModule, FcfaPipe, DatePipe, Pagination, TriMobile],
+  imports: [FormsModule, FcfaPipe, DatePipe, Pagination, TriMobile, Icone],
   template: `
     <div class="entete">
-      <div><h2>Clients</h2><p class="sous-titre">Fichier client et historique d'achats</p></div>
+      <div class="titre-page"><span class="titre-ico"><app-icone nom="clients" [taille]="22" /></span><div><h2>Clients</h2><p class="sous-titre">Fichier client et historique d'achats</p></div></div>
       @if (peutModifier) {
-        <button (click)="nouveau()">+ Nouveau client</button>
+        <button (click)="nouveau()"><app-icone nom="plus" [taille]="16" /> Nouveau client</button>
       }
     </div>
 
@@ -44,8 +45,8 @@ interface FormClient {
           <label class="large">Adresse <input [(ngModel)]="f.adresse" /></label>
         </div>
         <div class="actions">
-          <button (click)="enregistrer(f)">Enregistrer</button>
-          <button class="secondaire" (click)="edition.set(null)">Annuler</button>
+          <button (click)="enregistrer(f)"><app-icone nom="enregistrer" [taille]="16" /> Enregistrer</button>
+          <button class="secondaire" (click)="edition.set(null)"><app-icone nom="croix" [taille]="16" /> Annuler</button>
         </div>
       </div>
     }
@@ -71,10 +72,10 @@ interface FormClient {
               <td data-label="E-mail">{{ c.email }}</td>
               <td data-label="Adresse">{{ c.adresse }}</td>
               <td data-label="" class="actions">
-                <button class="petit secondaire" (click)="voirHistorique(c)">Historique</button>
+                <button class="petit secondaire" (click)="voirHistorique(c)"><app-icone nom="horloge" [taille]="16" /> Historique</button>
                 @if (peutModifier) {
-                  <button class="petit secondaire" (click)="modifier(c)">Modifier</button>
-                  <button class="petit danger" (click)="supprimer(c)">Supprimer</button>
+                  <button class="petit secondaire" (click)="modifier(c)"><app-icone nom="crayon" [taille]="16" /> Modifier</button>
+                  <button class="petit danger" (click)="supprimer(c)"><app-icone nom="corbeille" [taille]="16" /> Supprimer</button>
                 }
               </td>
             </tr>
@@ -104,7 +105,7 @@ interface FormClient {
             }
           </tbody>
         </table>
-        <div class="actions"><button class="secondaire" (click)="historique.set(null)">Fermer</button></div>
+        <div class="actions"><button class="secondaire" (click)="historique.set(null)"><app-icone nom="croix" [taille]="16" /> Fermer</button></div>
       </div>
     }
   `,

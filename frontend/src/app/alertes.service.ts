@@ -16,6 +16,10 @@ export class AlertesService {
 
   readonly produits = signal<Produit[]>([]);
   readonly nombre = computed(() => this.produits().length);
+  /** Produits (id -> quantité) dont l'alerte a été lue : une nouvelle baisse de stock redevient « non lue ». */
+  private lues = signal<Record<number, number>>(this.lireLues());
+  /** Nombre affiché sur la pastille de la cloche : alertes pas encore lues. */
+  readonly nonLues = computed(() => this.produits().filter((p) => this.lues()[p.id] !== p.quantite).length);
   readonly ruptures = computed(() => this.produits().filter((p) => p.quantite === 0).length);
   readonly etat = signal<EtatNotifications>(this.lireEtat());
 
@@ -27,6 +31,26 @@ export class AlertesService {
     if (this.minuteur) return;
     this.rafraichir();
     this.minuteur = setInterval(() => this.rafraichir(), 60000);
+  }
+
+  /** Marque toutes les alertes actuelles comme lues (à l'ouverture de la cloche). */
+  marquerLues() {
+    const lues: Record<number, number> = {};
+    for (const p of this.produits()) lues[p.id] = p.quantite;
+    this.lues.set(lues);
+    try {
+      localStorage.setItem('logistock.alertes.lues', JSON.stringify(lues));
+    } catch {
+      /* stockage indisponible : la lecture reste valable jusqu'au rechargement */
+    }
+  }
+
+  private lireLues(): Record<number, number> {
+    try {
+      return JSON.parse(localStorage.getItem('logistock.alertes.lues') ?? '{}');
+    } catch {
+      return {};
+    }
   }
 
   arreter() {

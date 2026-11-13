@@ -1,8 +1,10 @@
 import { Component, input } from '@angular/core';
 import { DonneesTable } from './table';
+import { Icone } from './icone';
 
 @Component({
   selector: 'app-pagination',
+  imports: [Icone],
   template: `
     <div class="pagination">
       <span>{{ t().total() }} résultat{{ t().total() > 1 ? 's' : '' }}</span>
@@ -15,9 +17,9 @@ import { DonneesTable } from './table';
             <option value="50">50</option>
           </select>
         </label>
-        <button class="petit secondaire" (click)="t().precedent()" [disabled]="t().pageCourante() === 1">‹</button>
+        <button class="petit secondaire" (click)="t().precedent()" [disabled]="t().pageCourante() === 1" aria-label="Page précédente"><app-icone nom="gauche" [taille]="16" /></button>
         <span>Page {{ t().pageCourante() }} / {{ t().nbPages() }}</span>
-        <button class="petit secondaire" (click)="t().suivant()" [disabled]="t().pageCourante() === t().nbPages()">›</button>
+        <button class="petit secondaire" (click)="t().suivant()" [disabled]="t().pageCourante() === t().nbPages()" aria-label="Page suivante"><app-icone nom="droite" [taille]="16" /></button>
       </div>
     </div>
   `,

@@ -8,12 +8,13 @@ import { MessageService } from '../message.service';
 import { Mouvement, Produit } from '../models';
 import { Pagination, TriMobile } from '../pagination';
 import { DonneesTable } from '../table';
+import { Icone } from '../icone';
 
 @Component({
   selector: 'app-mouvements',
-  imports: [FormsModule, DatePipe, Pagination, TriMobile],
+  imports: [FormsModule, DatePipe, Pagination, TriMobile, Icone],
   template: `
-    <div class="entete"><div><h2>Mouvements de stock</h2><p class="sous-titre">Entrées, sorties et historique complet</p></div></div>
+    <div class="entete"><div class="titre-page"><span class="titre-ico"><app-icone nom="mouvements" [taille]="22" /></span><div><h2>Mouvements de stock</h2><p class="sous-titre">Entrées, sorties et historique complet</p></div></div></div>
 
     @if (peutEnregistrer) {
       <div class="panneau">
@@ -36,7 +37,7 @@ import { DonneesTable } from '../table';
           <label>Quantité <input type="number" min="1" [(ngModel)]="form.quantite" /></label>
           <label>Motif <input [(ngModel)]="form.motif" placeholder="ex. Réception fournisseur" /></label>
         </div>
-        <div class="actions"><button (click)="enregistrer()">Enregistrer</button></div>
+        <div class="actions"><button (click)="enregistrer()"><app-icone nom="enregistrer" [taille]="16" /> Enregistrer</button></div>
       </div>
     }
 
@@ -75,6 +76,7 @@ import { DonneesTable } from '../table';
               <td data-label="Produit">{{ nomProduit(m.produitId) }}</td>
               <td data-label="Type">
                 <span class="badge" [class.vert]="m.type === 'ENTREE'" [class.orange]="m.type === 'SORTIE'">
+                  <app-icone [nom]="m.type === 'ENTREE' ? 'entree' : 'depart'" [taille]="12" />
                   {{ m.type === 'ENTREE' ? 'Entrée' : 'Sortie' }}
                 </span>
               </td>

@@ -3,10 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../api.service';
 import { AuthService } from '../auth.service';
+import { Icone } from '../icone';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
+  imports: [FormsModule, Icone],
   template: `
     <div class="connexion">
       <div class="presentation">
@@ -36,7 +37,7 @@ import { AuthService } from '../auth.service';
               <div class="alerte">{{ erreur() }}</div>
             }
             <button class="plein" (click)="entrer()" [disabled]="attente()">
-              {{ attente() ? 'Connexion…' : 'Se connecter' }}
+              <app-icone nom="cadenas" [taille]="16" /> {{ attente() ? 'Connexion…' : 'Se connecter' }}
             </button>
             <p class="bas-carte">Pas encore de compte ? <a href="#" (click)="basculer($event, true)">Demander un compte</a></p>
           } @else {
@@ -58,7 +59,7 @@ import { AuthService } from '../auth.service';
               <div class="alerte">{{ erreur() }}</div>
             }
             <button class="plein" (click)="demander()" [disabled]="attente()">
-              {{ attente() ? 'Envoi…' : 'Envoyer la demande' }}
+              <app-icone nom="utilisateur" [taille]="16" /> {{ attente() ? 'Envoi…' : 'Envoyer la demande' }}
             </button>
             <p class="bas-carte">Déjà un compte ? <a href="#" (click)="basculer($event, false)">Se connecter</a></p>
           }
